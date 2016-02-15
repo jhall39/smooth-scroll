@@ -78,6 +78,23 @@
 		return extended;
 
 	};
+	
+	var parseUri = function ( url ) {
+		var result = {};
+
+		var anchor = document.createElement('a');
+		anchor.href = url;
+		
+		var keys = 'protocol hostname host pathname port search hash href'.split(' ');
+		for (var keyIndex in keys) {
+		var currentKey = keys[keyIndex]; 
+		result[currentKey] = anchor[currentKey];
+		}
+		
+		result.toString = function() { return anchor.href; };
+		result.requestUri = result.pathname + result.search;  
+		return result;
+	};
 
 	/**
 	 * Get the height of an element.
@@ -183,7 +200,7 @@
 		var firstCodeUnit = string.charCodeAt(0);
 		while (++index < length) {
 			codeUnit = string.charCodeAt(index);
-			// Note: there’s no need to special-case astral symbols, surrogate
+			// Note: thereӳ no need to special-case astral symbols, surrogate
 			// pairs, or lone surrogates.
 
 			// If the character is NULL (U+0000), then throw an
@@ -196,13 +213,13 @@
 
 			if (
 				// If the character is in the range [\1-\1F] (U+0001 to U+001F) or is
-				// U+007F, […]
+				// U+007F, [Ɲ
 				(codeUnit >= 0x0001 && codeUnit <= 0x001F) || codeUnit == 0x007F ||
 				// If the character is the first character and is in the range [0-9]
-				// (U+0030 to U+0039), […]
+				// (U+0030 to U+0039), [Ɲ
 				(index === 0 && codeUnit >= 0x0030 && codeUnit <= 0x0039) ||
 				// If the character is the second character and is in the range [0-9]
-				// (U+0030 to U+0039) and the first character is a `-` (U+002D), […]
+				// (U+0030 to U+0039) and the first character is a `-` (U+002D), [Ɲ
 				(
 					index === 1 &&
 					codeUnit >= 0x0030 && codeUnit <= 0x0039 &&
@@ -217,7 +234,7 @@
 			// If the character is not handled by one of the above rules and is
 			// greater than or equal to U+0080, is `-` (U+002D) or `_` (U+005F), or
 			// is in one of the ranges [0-9] (U+0030 to U+0039), [A-Z] (U+0041 to
-			// U+005A), or [a-z] (U+0061 to U+007A), […]
+			// U+005A), or [a-z] (U+0061 to U+007A), [Ɲ
 			if (
 				codeUnit >= 0x0080 ||
 				codeUnit === 0x002D ||
@@ -417,6 +434,12 @@
 
 		// Don't run if right-click or command/control + click
 		if ( event.button !== 0 || event.metaKey || event.ctrlKey ) return;
+		
+		// Don't run if different urls
+		var cururl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+		var link = parseUri(event.target.href);
+		var linkurl = link.protocol + "//" + link.host + link.pathname;
+		if (cururl != linkurl) return;
 
 		// If a smooth scroll link, animate it
 		var toggle = getClosest( event.target, settings.selector );
